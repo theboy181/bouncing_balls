@@ -2,10 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bouncing Balls</title>
+  <style>
+    body, canvas {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+    }
+    body {
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
 </head>
-
 <body>
   <canvas id="bouncingBalls"></canvas>
   <script>
@@ -265,7 +278,7 @@ function animate() {
             balls.splice(i, 1);
             balls.splice(j, 1);
 
-            if (combinedBall.combineCount >= 3 ) {
+            if (combinedBall.combineCount >= 5 ) {
               const fragments = explodeBall(combinedBall);
               balls.push(...fragments);
             } else {
@@ -300,3 +313,6 @@ animate();
 </script>
 </body>
 </html>
+
+
+https://theboy181.github.io/bouncing_balls/index.html
