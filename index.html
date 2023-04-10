@@ -265,7 +265,7 @@ function animate() {
             balls.splice(i, 1);
             balls.splice(j, 1);
 
-            if (combinedBall.combineCount >= 5 ) {
+            if (combinedBall.combineCount >= 3 ) {
               const fragments = explodeBall(combinedBall);
               balls.push(...fragments);
             } else {
