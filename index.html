@@ -24,13 +24,14 @@
   <script>
 const canvas = document.getElementById('bouncingBalls');
 const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
 
-window.addEventListener('resize', () => {
+function resizeCanvas() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-});
+}
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
 // The rest of the code...
 
