@@ -18,10 +18,20 @@
     canvas {
       display: block;
     }
+  button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
   </style>
 </head>
+
 <body>
   <canvas id="bouncingBalls"></canvas>
+  <button onclick="toggleFullScreen()">Toggle Fullscreen</button>
+
+
   <script>
 const canvas = document.getElementById('bouncingBalls');
 const ctx = canvas.getContext('2d');
@@ -297,24 +307,38 @@ function animate() {
 
 // ... The rest of the code
 
-canvas.addEventListener('touchstart', (e) => {
-  e.preventDefault();
-  const numBallsToAdd = 1;
-  const ballsToAdd = createBalls(numBallsToAdd);
-  balls.push(...ballsToAdd);
-});
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      const numBallsToAdd = 1;
+      const ballsToAdd = createBalls(numBallsToAdd);
+      balls.push(...ballsToAdd);
+    });
 
-canvas.addEventListener('touchmove', (e) => {
-  e.preventDefault();
-});
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+    });
 
-const numBalls = parseInt(prompt('How many balls would you like to see on screen?'), 10);
-const balls = createBalls(numBalls);
-animate();
+    document.addEventListener("DOMContentLoaded", () => {
+      const numBalls = parseInt(prompt('How many balls would you like to see on screen?'), 10);
+      balls = createBalls(numBalls);
+      animate();
+    });
 
-</script>
+ function toggleFullScreen() {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen();
+        } else if (document.documentElement.webkitRequestFullscreen) {
+          document.documentElement.webkitRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+      }
+    }
+  </script>
 </body>
 </html>
-
-
-https://theboy181.github.io/bouncing_balls/index.html
