@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Bouncing Balls</title>
+</head>
+
+<body>
+  <canvas id="bouncingBalls"></canvas>
+  <script>
+const canvas = document.getElementById('bouncingBalls');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+
+// The rest of the code...
+
+
+    class Ball {
+      constructor(x, y, radius, color) {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.color = color;
+        this.vx = Math.random() * 4 - 2;
+        this.vy = Math.random() * 4 - 2;
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.closePath();
+      }
+
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+
+        if (this.x + this.radius > canvas.width || this.x - this.radius < 0) {
+          this.vx = -this.vx;
+        }
+        if (this.y + this.radius > canvas.height || this.y - this.radius < 0) {
+          this.vy = -this.vy;
+        }
+
+        this.draw();
+      }
+    }
+
+    function createBalls(numBalls) {
+      const balls = [];
+      for (let i = 0; i < numBalls; i++) {
+        const radius = Math.random() * 20 + 10;
+        const x = Math.random() * (canvas.width - 2 * radius) + radius;
+        const y = Math.random() * (canvas.height - 2 * radius) + radius;
+        const color = randomColor();
+        balls.push(new Ball(x, y, radius, color));
+      }
+      return balls;
+    }
+
+    function randomColor() {
+      const r = Math.floor(Math.random() * 256);
+      const g = Math.floor(Math.random() * 256);
+      const b = Math.floor(Math.random() * 256);
+      return `rgb(${r},${g},${b})`;
+    }
+
+    function checkCollision(ball1, ball2) {
+      const dx = ball1.x - ball2.x;
+      const dy = ball1.y - ball2.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      return distance < ball1.radius + ball2.radius;
+    }
+
+function resolveCollision(ball1, ball2) {
+  const dx = ball1.x - ball2.x;
+  const dy = ball1.y - ball2.y;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+
+  if (distance < ball1.radius + ball2.radius) {
+    // Add separation force
+    const overlap = ball1.radius + ball2.radius - distance;
+    const separationForce = 0.01 * overlap;
+    const angle = Math.atan2(dy, dx);
+    ball1.x += separationForce * Math.cos(angle);
+    ball1.y += separationForce * Math.sin(angle);
+    ball2.x -= separationForce * Math.cos(angle);
+    ball2.y -= separationForce * Math.sin(angle);
+
+    // Original collision resolution
+    const collisionAngle = Math.atan2(dy, dx);
+    const magnitude1 = Math.sqrt(ball1.vx * ball1.vx + ball1.vy * ball1.vy);
+    const magnitude2 = Math.sqrt(ball2.vx * ball2.vx + ball2.vy * ball2.vy);
+    const direction1 = Math.atan2(ball1.vy, ball1.vx);
+    const direction2 = Math.atan2(ball2.vy, ball2.vx);
+
+    const newVx1 = magnitude1 * Math.cos(direction1 - collisionAngle);
+    const newVy1 = magnitude1 * Math.sin(direction1 - collisionAngle);
+    const newVx2 = magnitude2 * Math.cos(direction2 - collisionAngle);
+    const newVy2 = magnitude2 * Math.sin(direction2 - collisionAngle);
+
+    const finalVx1 = ((ball1.radius - ball2.radius) * newVx1 + (2 * ball2.radius) * newVx2) / (ball1.radius + ball2.radius);
+    const finalVx2 = ((2 * ball1.radius) * newVx1 + (ball2.radius - ball1.radius) * newVx2) / (ball1.radius + ball2.radius);
+
+    const finalVy1 = newVy1;
+    const finalVy2 = newVy2;
+
+    ball1.vx = Math.cos(collisionAngle) * finalVx1 + Math.cos(collisionAngle + Math.PI / 2) * finalVy1;
+    ball1.vy = Math.sin(collisionAngle) * finalVx1 + Math.sin(collisionAngle + Math.PI / 2) * finalVy1;
+    ball2.vx = Math.cos(collisionAngle) * finalVx2 + Math.cos(collisionAngle + Math.PI / 2) * finalVy2;
+    ball2.vy = Math.sin(collisionAngle) * finalVx2 + Math.sin(collisionAngle + Math.PI / 2) * finalVy2;
+  }
+}
+
+
+
+
+function rgbToObj(color) {
+  const rgb = color
+    .substring(4, color.length - 1)
+    .split(',')
+    .map(num => parseInt(num.trim()));
+
+  return {
+    r: rgb[0],
+    g: rgb[1],
+    b: rgb[2]
+  };
+}
+
+function colorDifference(color1, color2) {
+  const threshold = 64;
+  const c1 = rgbToObj(color1);
+  const c2 = rgbToObj(color2);
+  const rDiff = Math.abs(c1.r - c2.r);
+  const gDiff = Math.abs(c1.g - c2.g);
+  const bDiff = Math.abs(c1.b - c2.b);
+
+  return rDiff <= threshold && gDiff <= threshold && bDiff <= threshold;
+}
+
+function rgbToHsv(r, g, b) {
+  r /= 255, g /= 255, b /= 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h, s, v = max;
+  const d = max - min;
+
+  s = max === 0 ? 0 : d / max;
+
+  if (max === min) {
+    h = 0; // achromatic
+  } else {
+    switch (max) {
+      case r:
+        h = (g - b) / d + (g < b ? 6 : 0);
+        break;
+      case g:
+        h = (b - r) / d + 2;
+        break;
+      case b:
+        h = (r - g) / d + 4;
+        break;
+    }
+    h /= 6;
+  }
+
+  return [h, s, v];
+}
+
+function extractHue(colorString) {
+  const rgb = colorString
+    .substring(4, colorString.length - 1)
+    .replace(/ /g, '')
+    .split(',')
+    .map(Number);
+  return rgbToHsv(rgb[0], rgb[1], rgb[2])[0];
+}
+
+function combineBalls(ball1, ball2) {
+  const hue1 = extractHue(ball1.color);
+  const hue2 = extractHue(ball2.color);
+  const hueThreshold = 0.1; // Adjust this value to control the hue similarity
+
+  if (Math.abs(hue1 - hue2) <= hueThreshold) {
+    let newRadius;
+    let newColor;
+
+    if (ball1.radius > ball2.radius) {
+      newRadius = ball1.radius + ball2.radius;
+      newColor = ball1.color;
+    } else if (ball1.radius < ball2.radius) {
+      newRadius = ball1.radius + ball2.radius;
+      newColor = ball2.color;
+    } else {
+      newRadius = ball1.radius * 2;
+      newColor = ball1.color;
+    }
+
+    const newX = (ball1.x + ball2.x) / 2;
+    const newY = (ball1.y + ball2.y) / 2;
+    const newBall = new Ball(newX, newY, newRadius, newColor);
+    newBall.combineCount = (ball1.combineCount || 0) + (ball2.combineCount || 0) + 1; // Update combineCount property
+    return newBall;
+  }
+  return null;
+}
+
+
+
+function explodeBall(ball) {
+  const fragmentRadius = 10;
+  const numFragments = Math.floor(ball.radius / fragmentRadius);
+
+  const fragments = [];
+
+  // Create the fragments
+  for (let i = 0; i < numFragments; i++) {
+    const color = randomColor();
+    const fragment = new Ball(ball.x, ball.y, fragmentRadius, color);
+    fragment.vx = Math.cos((i * 2 * Math.PI) / numFragments + Math.PI / 4) * 4;
+    fragment.vy = Math.sin((i * 2 * Math.PI) / numFragments + Math.PI / 4) * 4;
+    fragment.recentlyExploded = true;
+    fragments.push(fragment);
+  }
+
+  return fragments;
+}
+
+
+
+
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let i = balls.length - 1; i >= 0; i--) {
+    const ball = balls[i];
+    ball.update();
+
+    if (ball.recentlyExploded) {
+      setTimeout(() => {
+        ball.recentlyExploded = false;
+      }, 2000);
+    }
+
+    for (let j = i - 1; j >= 0; j--) {
+      const otherBall = balls[j];
+      if (checkCollision(ball, otherBall)) {
+        resolveCollision(ball, otherBall);
+
+        if (!ball.recentlyExploded && !otherBall.recentlyExploded) {
+          const combinedBall = combineBalls(ball, otherBall);
+          if (combinedBall) {
+            balls.splice(i, 1);
+            balls.splice(j, 1);
+
+            if (combinedBall.combineCount >= 5 ) {
+              const fragments = explodeBall(combinedBall);
+              balls.push(...fragments);
+            } else {
+              balls.push(combinedBall);
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+// ... The rest of the code
+
+canvas.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  const numBallsToAdd = 1;
+  const ballsToAdd = createBalls(numBallsToAdd);
+  balls.push(...ballsToAdd);
+});
+
+canvas.addEventListener('touchmove', (e) => {
+  e.preventDefault();
+});
+
+const numBalls = parseInt(prompt('How many balls would you like to see on screen?'), 10);
+const balls = createBalls(numBalls);
+animate();
+
+</script>
+</body>
+</html>
